@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 직접 만든 앱
     "analyses",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -55,7 +56,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # backend/templates/ 의 HTML을 찾는다
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -133,3 +134,8 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+# 로그인·로그아웃 (4단계)
+LOGIN_URL = "login"                # 로그인이 필요한 화면에 비로그인으로 오면 보내는 곳
+LOGIN_REDIRECT_URL = "home"        # 로그인 뒤 갈 곳
+LOGOUT_REDIRECT_URL = "home"       # 로그아웃 뒤 갈 곳

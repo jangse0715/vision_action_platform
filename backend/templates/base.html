@@ -1,0 +1,36 @@
+{% comment %} 모든 화면이 함께 쓰는 틀: 위쪽 메뉴와 로그인 상태 {% endcomment %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Vision Action Platform{% endblock %}</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; }
+    nav { display: flex; gap: 1rem; align-items: center; padding: .75rem 1.5rem; background: #2c3e50; }
+    nav a, nav button { color: #fff; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; }
+    nav .right { margin-left: auto; display: flex; gap: 1rem; align-items: center; color: #ddd; }
+    main { padding: 1.5rem; max-width: 720px; }
+    .errorlist { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{% url 'home' %}"><b>Vision Action</b></a>
+    <div class="right">
+      {% if user.is_authenticated %}
+        <span>{{ user.username }}{% if user.is_staff %} (관리자){% endif %}</span>
+        <a href="{% url 'me' %}">내 정보</a>
+        {% if user.is_staff %}<a href="{% url 'admin:index' %}">관리자 페이지</a>{% endif %}
+        {% comment %} Django 5.0부터 로그아웃은 POST로만 받는다 (링크 클릭 GET으로는 안 됨) {% endcomment %}
+        <form method="post" action="{% url 'logout' %}" style="display:inline">
+          {% csrf_token %}<button type="submit">로그아웃</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">로그인</a>
+        <a href="{% url 'signup' %}">회원가입</a>
+      {% endif %}
+    </div>
+  </nav>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

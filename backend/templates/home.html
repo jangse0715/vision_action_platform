@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Vision Action Platform</h1>
+  {% if user.is_authenticated %}
+    <p>{{ user.username }}님, 로그인되어 있습니다. 분석 화면은 9단계에서 이곳에 연결됩니다.</p>
+  {% else %}
+    <p>분석을 요청하려면 로그인하세요.</p>
+  {% endif %}
+{% endblock %}

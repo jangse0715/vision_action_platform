@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}회원가입{% endblock %}
+{% block content %}
+  <h1>회원가입</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  {% comment %} 입력 칸과 오류(중복 아이디, 짧은 비밀번호 등)가 함께 나온다 {% endcomment %}
+    <button type="submit">가입하기</button>
+  </form>
+{% endblock %}

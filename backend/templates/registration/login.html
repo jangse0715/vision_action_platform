@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}로그인{% endblock %}
+{% block content %}
+  <h1>로그인</h1>
+  {% if form.errors %}<p class="errorlist">아이디 또는 비밀번호가 맞지 않습니다.</p>{% endif %}
+  {% if next and not user.is_authenticated %}<p>이 화면을 보려면 먼저 로그인하세요.</p>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit">로그인</button>
+  </form>
+  <p>계정이 없나요? <a href="{% url 'signup' %}">회원가입</a></p>
+{% endblock %}

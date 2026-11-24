@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}내 정보{% endblock %}
+{% block content %}
+  <h1>내 정보</h1>
+  <ul>
+    <li>아이디: {{ user.username }}</li>
+    <li>가입일: {{ user.date_joined|date:"Y-m-d H:i" }}</li>
+    <li>권한: {% if user.is_staff %}관리자 (전체 기록·통계 화면 접근 가능){% else %}일반 회원 (본인 기록만){% endif %}</li>
+  </ul>
+{% endblock %}
