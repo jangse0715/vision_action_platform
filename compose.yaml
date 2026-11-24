@@ -1,0 +1,24 @@
+# compose.yaml — Docker Compose로 띄울 서비스 목록
+# 3단계: PostgreSQL 하나만 먼저 띄운다. 11단계에서 django·fastapi·celery·redis를 더해 5개로 늘린다.
+# 실행 (프로젝트 맨 위 폴더에서):  docker compose up -d postgres
+# 상태 확인:                      docker compose ps
+
+services:
+  postgres:
+    image: postgres:17                      # PostgreSQL 공식 이미지 (17번대)
+    environment:                            # .env의 값으로 DB·계정을 처음 한 번 만든다
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"                         # 내 PC의 5432 → 컨테이너의 5432 (Django를 PC에서 돌리는 동안 필요)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # 컨테이너를 지워도 데이터가 남는 저장 공간 (T10)
+    healthcheck:                            # DB가 접속을 받을 준비가 됐는지 스스로 검사
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
