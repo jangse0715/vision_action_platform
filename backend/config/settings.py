@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # 설치해서 쓰는 패키지
+    "rest_framework",
     # 직접 만든 앱
     "analyses",
     "accounts",
@@ -139,3 +141,27 @@ MAILERS = {
 LOGIN_URL = "login"                # 로그인이 필요한 화면에 비로그인으로 오면 보내는 곳
 LOGIN_REDIRECT_URL = "home"        # 로그인 뒤 갈 곳
 LOGOUT_REDIRECT_URL = "home"       # 로그아웃 뒤 갈 곳
+
+# DRF API 설정 (5단계)
+REST_FRAMEWORK = {
+    # 누구인지 알아내는 방법: 브라우저 로그인 세션(웹 화면·Browsable API) + 아이디·비밀번호(curl·Postman 시험용)
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    # 기본값: 로그인한 사람만 API를 쓸 수 있다
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    # 목록은 20개씩 나눠서
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+}
+
+# 분석 입력 규칙 (5단계 검사에 쓰고, 7·8단계 실행에 쓴다)
+UPLOAD_MAX_MB = int(os.environ.get("UPLOAD_MAX_MB", "100"))
+UPLOAD_ALLOWED_SUFFIXES = [".mp4", ".avi", ".mov", ".mkv"]
+# 허용된 카메라: .env의 IP_WEBCAM_CAMERAS="이름=주소,이름=주소". DB에는 이름만 저장한다
+IP_WEBCAM_CAMERAS = dict(
+    item.split("=", 1) for item in os.environ.get("IP_WEBCAM_CAMERAS", "").split(",") if "=" in item
+)
+IP_WEBCAM_CAPTURE_SECONDS = int(os.environ.get("IP_WEBCAM_CAPTURE_SECONDS", "8"))
+IP_WEBCAM_CAPTURE_RANGE = (5, 10)  # 과제: '5~10초 수집'
