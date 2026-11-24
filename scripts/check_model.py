@@ -10,6 +10,7 @@
   4) 복사해 온 src 모듈을 import할 수 있는지 검사한다
 모든 검사를 통과하면 마지막 줄에 "1단계 통과"가 나오고, 하나라도 실패하면 "1단계 실패"가 나온다.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,7 +20,9 @@ from pathlib import Path
 
 # ai_service 폴더를 기준으로 경로를 잡는다 (이 파일은 ai_service/scripts/ 안에 있음)
 AI_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(AI_ROOT))  # "from src.xxx import ..."가 되도록 ai_service를 검색 경로에 넣음
+sys.path.insert(
+    0, str(AI_ROOT)
+)  # "from src.xxx import ..."가 되도록 ai_service를 검색 경로에 넣음
 
 MODELS = AI_ROOT / "models"
 MODEL_PATH = MODELS / "rf_action_baseline.joblib"
@@ -61,8 +64,14 @@ if MODEL_PATH.exists() and COLUMNS_PATH.exists() and INFO_PATH.exists():
         warnings.simplefilter("always")
         model = joblib.load(MODEL_PATH)  # 본인이 만든 신뢰할 수 있는 파일에만 사용
 
-    version_warnings = [str(w.message) for w in caught if "version" in str(w.message).lower()]
-    check("joblib 불러올 때 버전 경고 없음", not version_warnings, "; ".join(version_warnings)[:300])
+    version_warnings = [
+        str(w.message) for w in caught if "version" in str(w.message).lower()
+    ]
+    check(
+        "joblib 불러올 때 버전 경고 없음",
+        not version_warnings,
+        "; ".join(version_warnings)[:300],
+    )
 
     columns = json.loads(COLUMNS_PATH.read_text(encoding="utf-8"))
     info = json.loads(INFO_PATH.read_text(encoding="utf-8"))
@@ -76,16 +85,32 @@ if MODEL_PATH.exists() and COLUMNS_PATH.exists() and INFO_PATH.exists():
 
     check("Class 6개", len(classes) == EXPECTED_CLASSES, str(len(classes)))
     check("Class 순서가 학습 정보와 같음", classes == info.get("classes"))
-    check("모델 입력 Feature 1,140개", model.n_features_in_ == 1140, str(model.n_features_in_))
-    check("Feature 이름 JSON도 1,140개", len(columns) == model.n_features_in_, str(len(columns)))
-    check("30 Step × 38 = 1,140", steps is not None and steps * FEATURES_PER_STEP == model.n_features_in_)
-    check("Feature 이름이 t00~t29 순서로 놓임",
-          columns[0].startswith("t00_") and columns[-1].startswith(f"t{steps - 1:02d}_"))
-    
+    check(
+        "모델 입력 Feature 1,140개",
+        model.n_features_in_ == 1140,
+        str(model.n_features_in_),
+    )
+    check(
+        "Feature 이름 JSON도 1,140개",
+        len(columns) == model.n_features_in_,
+        str(len(columns)),
+    )
+    check(
+        "30 Step × 38 = 1,140",
+        steps is not None and steps * FEATURES_PER_STEP == model.n_features_in_,
+    )
+    check(
+        "Feature 이름이 t00~t29 순서로 놓임",
+        columns[0].startswith("t00_") and columns[-1].startswith(f"t{steps - 1:02d}_"),
+    )
+
     # 모델 안에 열 이름이 저장되어 있지 않으면, 순서를 지켜 주는 것은 JSON뿐이다
     has_names = hasattr(model, "feature_names_in_")
-    print("모델 안에 열 이름 저장됨(feature_names_in_):", has_names,
-          "→ 순서는 rf_feature_columns.json으로 지켜야 함" if not has_names else "")
+    print(
+        "모델 안에 열 이름 저장됨(feature_names_in_):",
+        has_names,
+        "→ 순서는 rf_feature_columns.json으로 지켜야 함" if not has_names else "",
+    )
 
 print("\n== 3. YOLO Pose 가중치 ==")
 
@@ -102,7 +127,13 @@ if POSE_PATH.exists():
 
 print("\n== 4. 복사해 온 src 모듈 import ==")
 
-for name in ("src.common", "src.pose_utils", "src.feature_utils", "src.sequence_utils", "src.realtime_utils"):
+for name in (
+    "src.common",
+    "src.pose_utils",
+    "src.feature_utils",
+    "src.sequence_utils",
+    "src.realtime_utils",
+):
     try:
         __import__(name)
         check(f"import {name}", True)
@@ -111,6 +142,8 @@ for name in ("src.common", "src.pose_utils", "src.feature_utils", "src.sequence_
 
 failed = [r for r in results if not r[1]]
 
-print("\n" + ("1단계 통과 (T01)" if not failed else f"1단계 실패: {len(failed)}개 항목"))
+print(
+    "\n" + ("1단계 통과 (T01)" if not failed else f"1단계 실패: {len(failed)}개 항목")
+)
 
 sys.exit(0 if not failed else 1)
