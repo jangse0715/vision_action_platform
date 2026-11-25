@@ -165,3 +165,12 @@ IP_WEBCAM_CAMERAS = dict(
 )
 IP_WEBCAM_CAPTURE_SECONDS = int(os.environ.get("IP_WEBCAM_CAPTURE_SECONDS", "8"))
 IP_WEBCAM_CAPTURE_RANGE = (5, 10)  # 과제: '5~10초 수집'
+
+# Redis·Celery (6단계)
+# Redis = 할 일 쪽지를 쌓아 두는 대기열(브로커). 결과는 Redis가 아니라 PostgreSQL(AnalysisJob)에 저장한다
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_TASK_IGNORE_RESULT = True          # Celery 자체 결과 저장은 쓰지 않는다 (상태·결과는 DB가 기준)
+CELERY_TIMEZONE = TIME_ZONE
+# Redis가 꺼져 있을 때 쪽지 넣기를 오래 붙잡지 않게: 짧게 몇 번만 다시 시도하고 포기한다 → 작업을 FAILED로 표시
+CELERY_TASK_PUBLISH_RETRY_POLICY = {"max_retries": 2, "interval_start": 0, "interval_step": 0.5, "interval_max": 1}
+CELERY_BROKER_CONNECTION_TIMEOUT = 2      # 초

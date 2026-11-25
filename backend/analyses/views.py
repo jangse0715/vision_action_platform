@@ -1,6 +1,6 @@
 """분석 작업 API (DRF).
 
-    POST   /api/v1/analyses/        작업 만들기 → DB에 PENDING으로 저장 (작업 등록은 6단계에서 붙인다)
+    POST   /api/v1/analyses/        작업 만들기 → DB에 PENDING으로 저장 → 저장이 확정되면 Worker 대기열에 등록 (6단계)
     GET    /api/v1/analyses/        내 작업 목록
     GET    /api/v1/analyses/{id}/   내 작업 상세 = 상태 + 사람별 결과 (가이드: 상태 조회도 이 주소로)
     PATCH  /api/v1/analyses/{id}/   제목·메모만 고치기
@@ -15,6 +15,7 @@ from rest_framework.response import Response
 
 from .models import AnalysisJob
 from .serializers import AnalysisJobCreateSerializer, AnalysisJobSerializer, AnalysisJobUpdateSerializer
+from .tasks import queue_analysis_job
 
 
 class AnalysisJobViewSet(viewsets.ModelViewSet):
@@ -37,7 +38,8 @@ class AnalysisJobViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         # 요청한 사람은 로그인 정보로 정한다 (사용자가 user 칸을 보내서 남의 이름으로 만들 수 없게)
         job = serializer.save(user=request.user, status=AnalysisJob.Status.PENDING)
-        # 6단계: 여기서 저장이 끝난 뒤(transaction.on_commit) Celery 작업을 등록한다
+        queue_analysis_job(job)   # 6단계: 저장이 확정된 뒤 Redis 대기열에 등록 → Worker가 처리
+        job.refresh_from_db()     # 등록하며 적은 Celery 작업 ID(또는 등록 실패 표시)를 응답에 담기 위해
         body = AnalysisJobSerializer(job, context=self.get_serializer_context()).data
         return Response(body, status=status.HTTP_201_CREATED)
 
