@@ -1,6 +1,6 @@
 # compose.yaml — Docker Compose로 띄울 서비스 목록
-# 3단계: PostgreSQL 하나만 먼저 띄운다. 11단계에서 django·fastapi·celery·redis를 더해 5개로 늘린다.
-# 실행 (프로젝트 맨 위 폴더에서):  docker compose up -d postgres
+# 3단계: PostgreSQL, 6단계: Redis를 먼저 띄운다. 11단계에서 django·fastapi·celery를 더해 5개로 늘린다.
+# 실행 (프로젝트 맨 위 폴더에서):  docker compose up -d postgres redis
 # 상태 확인:                      docker compose ps
 
 services:
@@ -19,6 +19,17 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  redis:                                    # 6단계: Celery 작업 대기열(브로커)
+    image: redis:8                          # Redis 공식 이미지 (8번대)
+    ports:
+      - "6379:6379"                         # 내 PC의 6379 → 컨테이너의 6379 (Django·Worker를 PC에서 돌리는 동안 필요)
+    healthcheck:                            # 'PING'에 'PONG'으로 답하면 준비 완료
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # 볼륨 없음: Redis에는 잠깐 머무는 쪽지만 둔다. 오래 남길 결과는 PostgreSQL에 저장한다
 
 volumes:
   postgres_data:
